@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="theme-color" content="#d92c62" />
+  <meta name="description" content="A little interactive sorry message made especially for Selfie." />
+  <title>Sorry Selfie 💗</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+    :root { --pink:#e52d68; --hot:#c91754; --red:#b9164b; --ink:#49232f; --soft:#fff5f7; --muted:#94717c; --line:#f1dce2; }
+    * { box-sizing: border-box; }
+    html, body { min-height:100%; margin:0; }
+    body { min-height:100vh; display:flex; justify-content:center; align-items:center; overflow-x:hidden; padding:18px; color:var(--ink); font-family:'Nunito',Arial,sans-serif; background:linear-gradient(145deg,#ee4b80 0%,#d31355 48%,#a80e45 100%); }
+    button { font:inherit; }
+    .hearts { position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0; }
+    .heart { position:absolute; bottom:-40px; color:rgba(255,255,255,.27); font-size:var(--size); animation:rise var(--speed) linear infinite; animation-delay:var(--delay); left:var(--left); }
+    @keyframes rise { 0%{transform:translateY(0) rotate(0);opacity:0} 12%{opacity:1} 100%{transform:translateY(-110vh) rotate(35deg);opacity:0} }
+    .app { position:relative; z-index:1; width:min(100%,430px); min-height:min(820px,calc(100vh - 36px)); padding:22px 17px 16px; display:flex; flex-direction:column; border-radius:30px; background:rgba(255,255,255,.97); box-shadow:0 24px 70px rgba(83,0,29,.3); overflow:hidden; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; color:#bd6279; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .topbar .mini-heart { font-size:20px; color:var(--pink); }
+    .progress { height:5px; margin:14px 2px 2px; border-radius:99px; background:#f8e5e9; overflow:hidden; }
+    .progress span { display:block; width:12%; height:100%; border-radius:99px; background:linear-gradient(90deg,var(--pink),#ff91ad); transition:width .5s ease; }
+    .screen { display:none; flex:1; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:34px 15px 25px; animation:screenIn .45s ease both; }
+    .screen.active { display:flex; }
+    @keyframes screenIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .sticker { width:142px; height:142px; display:grid; place-items:center; margin:0 auto 25px; border:3px dashed #efa6b7; border-radius:50%; background:#fff4f6; font-size:73px; box-shadow:inset 0 0 0 8px #fff; }
+    .sticker.small { width:120px; height:120px; font-size:61px; }
+    h1, h2 { margin:0; color:var(--ink); line-height:1.08; font-weight:900; letter-spacing:-.04em; }
+    h1 { font-size:clamp(34px,10vw,48px); } h2 { font-size:31px; }
+    h1 span, h2 span { color:var(--pink); }
+    .lead { max-width:315px; margin:14px auto 0; color:var(--muted); font-size:15px; line-height:1.65; }
+    .tiny { margin-top:14px; color:#b88c98; font-size:12px; }
+    .actions { width:100%; display:grid; gap:10px; margin-top:28px; }
+    .btn { width:100%; min-height:52px; padding:13px 17px; border:0; border-radius:15px; cursor:pointer; color:white; background:linear-gradient(135deg,var(--pink),var(--hot)); font-weight:900; font-size:15px; box-shadow:0 9px 18px rgba(214,28,87,.18); transition:transform .2s,filter .2s; }
+    .btn:hover { transform:translateY(-2px); filter:brightness(1.05); } .btn:active { transform:scale(.98); }
+    .btn.secondary { color:var(--pink); border:1px solid #f2ced8; background:white; box-shadow:none; }
+    .btn.ghost { color:#ad7584; border:0; background:transparent; box-shadow:none; font-size:13px; }
+    .promise { width:100%; padding:16px; margin-top:19px; border:1px solid var(--line); border-radius:16px; color:#936371; background:#fff8f9; font-size:13px; line-height:1.6; }
+    .count { color:var(--pink); font-size:92px; line-height:1; font-weight:900; animation:pulse 1s ease infinite; }
+    @keyframes pulse { 50%{transform:scale(1.08);opacity:.75} }
+    .scratch-wrap { width:100%; margin-top:22px; }
+    .scratch { position:relative; height:164px; overflow:hidden; border-radius:17px; background:#fff1f4; border:1px solid #f5d9df; }
+    .scratch-message { display:grid; place-items:center; height:100%; padding:24px; color:var(--pink); font-size:19px; font-weight:900; line-height:1.35; }
+    #scratchCanvas { position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:crosshair; }
+    .scratch-hint { margin:10px 0 0; color:#b28b95; font-size:12px; }
+    .letter { width:100%; padding:24px 20px; margin-top:23px; text-align:left; border:1px solid #f0d8dd; border-radius:18px; background:#fffaf8; box-shadow:0 8px 22px rgba(170,62,89,.08); }
+    .letter p { margin:0 0 13px; color:#7c5c66; font-family:Georgia,serif; font-size:15px; line-height:1.8; } .letter p:last-child{margin:0;text-align:right;color:var(--pink);font-family:'Nunito';font-weight:900;}
+    .confetti { position:fixed; pointer-events:none; z-index:5; width:8px; height:13px; animation:confetti 1.4s ease-out forwards; }
+    @keyframes confetti { to { transform:translate(var(--x),var(--y)) rotate(680deg); opacity:0; } }
+    .footer { margin-top:auto; padding-top:7px; text-align:center; color:#c18a99; font-size:11px; }
+    @media (max-height:700px) { .app{min-height:calc(100vh - 24px)} .screen{padding-top:20px;padding-bottom:15px}.sticker{width:105px;height:105px;font-size:54px;margin-bottom:18px} h1{font-size:37px}.lead{margin-top:10px}.actions{margin-top:18px} }
+  </style>
+</head>
+<body>
+  <div class="hearts" aria-hidden="true">
+    <i class="heart" style="--left:5%;--size:24px;--speed:10s;--delay:0s">♥</i><i class="heart" style="--left:20%;--size:15px;--speed:13s;--delay:3s">♥</i><i class="heart" style="--left:39%;--size:30px;--speed:12s;--delay:5s">♥</i><i class="heart" style="--left:62%;--size:18px;--speed:9s;--delay:1s">♥</i><i class="heart" style="--left:82%;--size:27px;--speed:14s;--delay:6s">♥</i><i class="heart" style="--left:93%;--size:14px;--speed:11s;--delay:2s">♥</i>
+  </div>
+
+  <main class="app">
+    <div class="topbar"><span>Just for you</span><span class="mini-heart">♥</span></div>
+    <div class="progress"><span id="progress"></span></div>
+
+    <section class="screen active" data-step="1" id="home">
+      <div class="sticker">🧸💗</div>
+      <h1>Hey <span>Selfie</span> 🥺</h1>
+      <p class="lead">I made something small and special for you. Please open it before you decide anything.</p>
+      <div class="actions"><button class="btn" onclick="go('ready')">Open Your Surprise 🎁</button></div>
+      <p class="tiny">Made with a very sorry heart</p>
+    </section>
+
+    <section class="screen" data-step="2" id="ready">
+      <div class="sticker small">🥺</div>
+      <h2>Are you ready, <span>Selfie?</span></h2>
+      <p class="lead">There is one little message waiting for you.</p>
+      <div class="actions"><button class="btn" onclick="go('countdown')">Yes, show me ✨</button><button class="btn secondary" onclick="go('not-ready')">No</button></div>
+    </section>
+
+    <section class="screen" data-step="3" id="not-ready">
+      <div class="sticker small">😤💗</div>
+      <h2>Not an option!</h2>
+      <p class="lead">You have to hear my sorry at least once. Then you can be angry again, okay?</p>
+      <div class="promise">I promise this is not a trick. It is only an honest apology for <b>Selfie</b>.</div>
+      <div class="actions"><button class="btn" onclick="go('countdown')">Okay fine, show me 💓</button></div>
+    </section>
+
+    <section class="screen" data-step="4" id="countdown">
+      <div class="sticker small">🧸✨</div>
+      <div class="count" id="count">3</div>
+      <p class="lead">Get ready, Selfie...</p>
+    </section>
+
+    <section class="screen" data-step="5" id="scratch-screen">
+      <div class="sticker small">🎟️💗</div>
+      <h2>A little <span>sorry</span> card</h2>
+      <p class="lead">Scratch the pink card to reveal what I really want to say.</p>
+      <div class="scratch-wrap"><div class="scratch"><div class="scratch-message">You mean more to me than my silly mistake. I am truly sorry, Selfie. 💖</div><canvas id="scratchCanvas"></canvas></div><p class="scratch-hint">Use your finger or mouse to scratch</p></div>
+      <div class="actions"><button class="btn" onclick="go('letter')">Continue →</button></div>
+    </section>
+
+    <section class="screen" data-step="6" id="letter">
+      <div class="sticker small">💌</div>
+      <h2>For <span>Selfie</span></h2>
+      <div class="letter"><p>Dear Selfie,</p><p>I am sorry. I know that saying it once cannot instantly fix everything, but I mean it with all my heart.</p><p>You are special to me, and I never wanted to hurt you. I will try to understand you better, listen more, and be more careful with your feelings.</p><p>Can you forgive me? 🥺</p><p>— Someone who really cares about you ♡</p></div>
+      <div class="actions"><button class="btn" onclick="go('final'); confetti()">One last thing 💗</button></div>
+    </section>
+
+    <section class="screen" data-step="7" id="final">
+      <div class="sticker">🐻💞</div>
+      <h1>Thank you, <span>Selfie!</span></h1>
+      <p class="lead">Whatever your answer is, I will respect your feelings. But I hope this little page made you smile.</p>
+      <div class="promise"><b>Sorry is small.</b><br />But the feeling behind it is very big. 💗</div>
+      <div class="actions"><button class="btn" onclick="go('home')">Read it again ↻</button></div>
+    </section>
+
+    <div class="footer">made with love, just for Selfie</div>
+  </main>
+
+  <script>
+    const screens = [...document.querySelectorAll('.screen')];
+    const progress = document.getElementById('progress');
+    let countdownTimer;
+    function go(id) {
+      clearInterval(countdownTimer);
+      screens.forEach(s => s.classList.toggle('active', s.id === id));
+      const active = document.getElementById(id);
+      progress.style.width = `${active.dataset.step / 7 * 100}%`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (id === 'countdown') startCountdown();
+      if (id === 'scratch-screen') setTimeout(initScratch, 80);
+    }
+    function startCountdown() {
+      const el = document.getElementById('count'); let n = 3; el.textContent = n;
+      countdownTimer = setInterval(() => { n--; if (n <= 0) { clearInterval(countdownTimer); go('scratch-screen'); } else el.textContent = n; }, 850);
+    }
+    let scratchReady = false;
+    function initScratch() {
+      const canvas = document.getElementById('scratchCanvas'); const box = canvas.parentElement; const ctx = canvas.getContext('2d');
+      const ratio = window.devicePixelRatio || 1; canvas.width = box.clientWidth * ratio; canvas.height = box.clientHeight * ratio; canvas.style.width = box.clientWidth+'px'; canvas.style.height = box.clientHeight+'px'; ctx.scale(ratio, ratio);
+      ctx.fillStyle = '#d8cfd2'; ctx.fillRect(0,0,box.clientWidth,box.clientHeight); ctx.fillStyle = '#998c91'; ctx.font = '800 16px Nunito, Arial'; ctx.textAlign = 'center'; ctx.fillText('SCRATCH HERE ✦', box.clientWidth/2, box.clientHeight/2 + 5);
+      let drawing = false;
+      const erase = e => { if(!drawing) return; const r=canvas.getBoundingClientRect(); const x=(e.clientX||e.touches?.[0]?.clientX)-r.left, y=(e.clientY||e.touches?.[0]?.clientY)-r.top; ctx.globalCompositeOperation='destination-out'; ctx.beginPath(); ctx.arc(x,y,24,0,Math.PI*2); ctx.fill(); };
+      canvas.onpointerdown = e => { drawing=true; canvas.setPointerCapture(e.pointerId); erase(e); }; canvas.onpointermove=erase; canvas.onpointerup=()=>drawing=false; canvas.onpointercancel=()=>drawing=false;
+      scratchReady=true;
+    }
+    function confetti() { for(let i=0;i<35;i++){ const c=document.createElement('i'); c.className='confetti'; c.style.left='50%'; c.style.top='48%'; c.style.background=['#e52d68','#ffc857','#8dd7bf','#a78bfa'][i%4]; c.style.setProperty('--x',(Math.random()*360-180)+'px'); c.style.setProperty('--y',(Math.random()*430-180)+'px'); c.style.transform=`rotate(${Math.random()*180}deg)`; document.body.appendChild(c); setTimeout(()=>c.remove(),1500); } }
+  </script>
+</body>
+</html>
